@@ -3,7 +3,7 @@
 #       populates list and variables accordingly 
 #######################################################
 
-f = open("tests/test04.swe", "r")
+f = open("tests/test02.swe", "r")
 k = int(f.readline())
 s = f.readline().strip()
 t_strings = []
@@ -31,12 +31,37 @@ f.close()
 # for item in dictionary_items:
 #     print(item)
 ##########################################################
+from anytree import Node, RenderTree
+
+
+#######################################################
+#      Class used to implement tree structure
+#    Of all possible combinations of choices of r
+#######################################################
+class Node(object):
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+    def add_child(self, obj):
+        self.children.append(obj)
 
 
 #######################################################
 #      Algorithm that is used to find if soultion
-#    exists and returns is if it does otherwise NO
+#    exists and returns it if it does otherwise NO
 #######################################################
+
+# Function that constructs a list of dictionaries with all possible cominations of chioces of r from R
+def list_of_dicts(dict_items):
+    count_of_items = len(dict_items)
+    count_of_choices = 1
+    for item in dict_items:
+        tmp_item_count = len(item[1])
+        count_of_choices *= tmp_item_count
+    print(count_of_choices)
+
+
 
 # Lets start by cutting out all r elements in each R by checking if they alone are a substring of s
 # thus eliminating all r's that could never form a substring of s
@@ -62,5 +87,26 @@ for x in unused_Rs:
     del dict_of_R[x]
 
 dictionary_items = dict_of_R.items()
+list_of_dicts(dictionary_items)
 for item in dictionary_items:
     print(item)
+
+
+root = [Node([])]
+# Function that constructs a tree of all possible choices of r from R
+def make_a_tree(parents, children):
+    print(*parents)
+    for node in parents:
+        #print(node.data)
+        for y in children:
+            tmp_node = Node(y)
+            node.add_child(tmp_node)
+    return parents
+
+for item in dictionary_items:
+    root = make_a_tree(root, item[1])
+
+print(*root)
+
+#for child in root.children:
+#    print(child.data)
