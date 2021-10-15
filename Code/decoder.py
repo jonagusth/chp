@@ -1,9 +1,11 @@
+import itertools 
+import copy
 #######################################################
 #         Decoder that takes from SWE file and 
 #       populates list and variables accordingly 
 #######################################################
 
-f = open("tests/test02.swe", "r")
+f = open("tests/test06.swe", "r")
 k = int(f.readline())
 s = f.readline().strip()
 t_strings = []
@@ -23,56 +25,26 @@ while(myline):
     myline = f.readline().strip()
 f.close()
 
-#########################################################
-# print("k er: {}".format(k))
-# print("s er: {}".format(s))
-# print("t strengirnir okkar eru:",*t_strings, sep=", ")
-# dictionary_items = dict_of_R.items()
-# for item in dictionary_items:
-#     print(item)
-##########################################################
-#from anytree import Node, RenderTree
-
-
-#######################################################
-#      Class used to implement tree structure
-#    Of all possible combinations of choices of r
-#######################################################
-class Node(object):
-    def __init__(self, data):
-        self.data = data
-        self.children = []
-
-    def add_child(self, obj):
-        self.children.append(obj)
-
+unused_Rs_copy = copy.deepcopy(unused_Rs)
 
 #######################################################
 #      Algorithm that is used to find if soultion
 #    exists and returns it if it does otherwise NO
 #######################################################
 
-# Function that constructs a list of dictionaries with all possible cominations of chioces of r from R
-def list_of_dicts(dict_items):
-    count_of_items = len(dict_items)
-    count_of_choices = 1
-    for item in dict_items:
-        tmp_item_count = len(item[1])
-        count_of_choices *= tmp_item_count
-    print(count_of_choices)
-    return count_of_choices
-
-
-
 # Lets start by cutting out all r elements in each R by checking if they alone are a substring of s
 # thus eliminating all r's that could never form a substring of s
 # and also get rid of all R that are unused (never appear in any of our t strings)
+dict_of_R_copy = copy.deepcopy(dict_of_R)
+used_R =[]
 for x in t_strings:
     tmp_len = len(x)
     for i in range(0, tmp_len):
         if(x[i].isupper()):
             if x[i] in unused_Rs:
                 unused_Rs.remove(x[i])
+            if x[i] not in used_R:
+                used_R.append(x[i])
             tmp_dict_list = dict_of_R[x[i]]
             tmp_dict_list_len = len(tmp_dict_list)
             tmp_index_list = []
@@ -87,41 +59,46 @@ for x in t_strings:
 for x in unused_Rs:
     del dict_of_R[x]
 
+def expansion(curr_string, big_Rs, choice):
+    new_string = ""
+    for c in curr_string:
+        if c.isupper():
+            tmpindex = big_Rs.index(c)
+            new_string += choice[tmpindex]
+        else: 
+            new_string += c       
+    return new_string
+
+
+def check_substring(t_strings, big_Rs, choices, s, all_dicts):
+    for choice in choices:
+        dmy_len = len(t_strings)
+        counter = 0
+        for x in t_strings:
+            current_t_string = expansion(x, big_Rs, choice)
+            if current_t_string not in s:
+                break
+            else:
+                counter += 1 
+        if counter == dmy_len:
+            for x in unused_Rs_copy:
+                if x in big_Rs:
+                    indx = big_Rs.index(x)
+                    print("{}: {}".format(x, choice[indx]))
+                else:
+                    print("{}: {}".format(x, dict_of_R_copy[x][0]))
+            return
+    print("NO")
+    
 
 dictionary_items = dict_of_R.items()
-how_many_chices = list_of_dicts(dictionary_items)
-all_choices = []
-for x in range(0, how_many_chices):
-    tmp_choice_list = []
-    for item in dictionary_items:
-        temp_length = len(item[1])
-        index = x%temp_length
-        tmp_choice_list.append(item[1][index])
-    all_choices.append(tmp_choice_list)
-
-for x in all_choices:
-    print(x)
-
+all_lists = []
 for item in dictionary_items:
-    print(item)
+    all_lists.append(item[1])
 
-#root = [Node([])]
-# Function that constructs a tree of all possible choices of r from R
-#def make_a_tree(parents, children):
-#    print(*parents)
-#    new_root=[]
-#    for node in parents:
-#        #print(node.data)
-#        for y in children:
-#            tmp_node = Node(y)
-#            node.add_child(tmp_node)
-#        new_root.append(node)
-#    return new_root
-#
-#for item in dictionary_items:
-#    root = make_a_tree(root, item[1])
-#
-#print(root[0].data)
+all_choices = list(itertools.product(*all_lists))
 
-#for child in root.children:
-#    print(child.data)
+t_strings.sort(key=len, reverse=True)
+
+used_R.sort()
+check_substring(t_strings, used_R, all_choices, s, dict_of_R_copy)
