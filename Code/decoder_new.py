@@ -14,8 +14,6 @@ while True:
         break
     except ValueError:
         valid_input = 'NO'
-        sys.exit()
-#k = int(input())
 s = sys.stdin.readline().strip()
 t_strings = []
 for x in range(0, k):
