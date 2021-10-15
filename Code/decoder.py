@@ -31,7 +31,7 @@ f.close()
 # for item in dictionary_items:
 #     print(item)
 ##########################################################
-from anytree import Node, RenderTree
+#from anytree import Node, RenderTree
 
 
 #######################################################
@@ -60,6 +60,7 @@ def list_of_dicts(dict_items):
         tmp_item_count = len(item[1])
         count_of_choices *= tmp_item_count
     print(count_of_choices)
+    return count_of_choices
 
 
 
@@ -86,27 +87,41 @@ for x in t_strings:
 for x in unused_Rs:
     del dict_of_R[x]
 
+
 dictionary_items = dict_of_R.items()
-list_of_dicts(dictionary_items)
+how_many_chices = list_of_dicts(dictionary_items)
+all_choices = []
+for x in range(0, how_many_chices):
+    tmp_choice_list = []
+    for item in dictionary_items:
+        temp_length = len(item[1])
+        index = x%temp_length
+        tmp_choice_list.append(item[1][index])
+    all_choices.append(tmp_choice_list)
+
+for x in all_choices:
+    print(x)
+
 for item in dictionary_items:
     print(item)
 
-
-root = [Node([])]
+#root = [Node([])]
 # Function that constructs a tree of all possible choices of r from R
-def make_a_tree(parents, children):
-    print(*parents)
-    for node in parents:
-        #print(node.data)
-        for y in children:
-            tmp_node = Node(y)
-            node.add_child(tmp_node)
-    return parents
-
-for item in dictionary_items:
-    root = make_a_tree(root, item[1])
-
-print(*root)
+#def make_a_tree(parents, children):
+#    print(*parents)
+#    new_root=[]
+#    for node in parents:
+#        #print(node.data)
+#        for y in children:
+#            tmp_node = Node(y)
+#            node.add_child(tmp_node)
+#        new_root.append(node)
+#    return new_root
+#
+#for item in dictionary_items:
+#    root = make_a_tree(root, item[1])
+#
+#print(root[0].data)
 
 #for child in root.children:
 #    print(child.data)
