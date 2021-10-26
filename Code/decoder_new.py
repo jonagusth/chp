@@ -1,6 +1,7 @@
 import itertools 
 import copy
 import sys
+import numpy
 #######################################################
 #         Decoder that takes from input and 
 #       populates list and variables accordingly 
@@ -50,6 +51,9 @@ if(len(valid_input) > 0):
 
 #TODO laga þannig að ef input ekki rétt þá skila NO
 
+res = set([s[i: j] for i in range(len(s))
+       for j in range(i + 1, len(s) + 1)])
+
 #######################################################
 #      Algorithm that is used to find if soultion
 #    exists and returns it if it does otherwise NO
@@ -98,13 +102,14 @@ def expansion(curr_string, big_Rs, choice):
 
 # Function that takes in all t_strings, and all possible chioces of r's and checks if there 
 # exists a choice where all t_strings are a subset of s
+"""
 def check_substring(t_strings, big_Rs, choices, s, all_dicts):
     for choice in choices:
         dmy_len = len(t_strings)
         counter = 0
         for x in t_strings:
             current_t_string = expansion(x, big_Rs, choice)
-            if current_t_string not in s:
+            if current_t_string not in res:
                 break
             else:
                 counter += 1 
@@ -120,21 +125,22 @@ def check_substring(t_strings, big_Rs, choices, s, all_dicts):
                         print("{}: {}".format(x, ''))
             return
     print("NO")
+    """
 
 # Make a list with all possible choices of r's from used R's and check if there is a solution
 dictionary_items = dict_of_R.items()
 all_lists = []
+
 for item in dictionary_items:
-    all_lists.append(item[1])
+    all_lists.append(numpy.array(item[1]))
 
 def listoflists(all_lists1, t_string, used_R, s):
-    tmp_all_choices = []
     count_t_strings = len(t_string)
     for x in itertools.product(*all_lists1):
         counter = 0
         for y in t_strings:
             current_t_string = expansion(y, used_R, x)
-            if current_t_string not in s:
+            if current_t_string not in res:
                 break
             else:
                 counter += 1 
@@ -152,15 +158,27 @@ def listoflists1(all_lists1, t_string, used_R, s):
     all_choices = []
     for x in itertools.product(*all_lists1):
         dummy_word = expansion(t_string[0], used_R, x)
-        if dummy_word in s:
+        if dummy_word in res:
             all_choices.append(x)
     #return list(itertools.product(*all_lists1))
     return all_choices
 
+def cartesian_product_simple_transpose(arrays):
+    la = len(arrays)
+    dtype = numpy.result_type(*arrays)
+    arr = numpy.empty([la] + [len(a) for a in arrays], dtype=dtype)
+    for i, a in enumerate(numpy.ix_(*arrays)):
+        arr[i, ...] = a
+    return arr.reshape(la, -1).T
+
 t_strings.sort(key=len, reverse=True)
 used_R.sort()
 
-all_choices = listoflists1(all_lists, t_strings, used_R, s)
+#all_choices = listoflists1(all_lists, t_strings, used_R, s)
+all_lists_new = cartesian_product_simple_transpose(all_lists)
+for i in range(0,10):
+    print(all_lists_new[i])
 #listoflists(all_lists, t_strings, used_R, s)
 
-check_substring(t_strings, used_R, all_choices, s, dict_of_R_copy)
+
+#check_substring(t_strings, used_R, all_choices, s, dict_of_R_copy)
