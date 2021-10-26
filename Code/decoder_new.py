@@ -14,6 +14,7 @@ while True:
         break
     except ValueError:
         valid_input = 'NO'
+        break
 s = sys.stdin.readline().strip()
 t_strings = []
 for x in range(0, k):
@@ -57,7 +58,9 @@ if(len(valid_input) > 0):
 # Lets start by cutting out all r elements in each R by checking if they alone are a substring of s
 # thus eliminating all r's that could never form a substring of s
 # and also get rid of all R that are unused (never appear in any of our t strings)
-dict_of_R_copy = copy.deepcopy(dict_of_R)
+dict_of_R_copy = {}
+for element in dict_of_R.keys():
+    dict_of_R_copy[element]=dict_of_R[element][0]
 used_R =[]
 for x in t_strings:
     tmp_len = len(x)
@@ -111,7 +114,10 @@ def check_substring(t_strings, big_Rs, choices, s, all_dicts):
                     indx = big_Rs.index(x)
                     print("{}: {}".format(x, choice[indx]))
                 else:
-                    print("{}: {}".format(x, dict_of_R_copy[x][0]))
+                    if len(dict_of_R_copy[x])>0:
+                        print("{}: {}".format(x, dict_of_R_copy[x]))
+                    else:
+                        print("{}: {}".format(x, ''))
             return
     print("NO")
 
@@ -121,7 +127,40 @@ all_lists = []
 for item in dictionary_items:
     all_lists.append(item[1])
 
-all_choices = list(itertools.product(*all_lists))
+def listoflists(all_lists1, t_string, used_R, s):
+    tmp_all_choices = []
+    count_t_strings = len(t_string)
+    for x in itertools.product(*all_lists1):
+        counter = 0
+        for y in t_strings:
+            current_t_string = expansion(y, used_R, x)
+            if current_t_string not in s:
+                break
+            else:
+                counter += 1 
+        if counter == count_t_strings:
+            for d in unused_Rs_copy:
+                if d in used_R:
+                    indx = used_R.index(d)
+                    print("{}: {}".format(d, x[indx]))
+                else:
+                    print("{}: {}".format(d, dict_of_R_copy[d]))
+            return
+    print('NO')
+
+def listoflists1(all_lists1, t_string, used_R, s):
+    all_choices = []
+    for x in itertools.product(*all_lists1):
+        dummy_word = expansion(t_string[0], used_R, x)
+        if dummy_word in s:
+            all_choices.append(x)
+    #return list(itertools.product(*all_lists1))
+    return all_choices
+
 t_strings.sort(key=len, reverse=True)
 used_R.sort()
+
+all_choices = listoflists1(all_lists, t_strings, used_R, s)
+#listoflists(all_lists, t_strings, used_R, s)
+
 check_substring(t_strings, used_R, all_choices, s, dict_of_R_copy)
