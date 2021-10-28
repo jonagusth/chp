@@ -17,31 +17,46 @@ while True:
         valid_input = 'NO'
         break
 s = sys.stdin.readline().strip()
-t_strings = []
-for x in range(0, k):
-    t_strings.append(sys.stdin.readline().strip())
-    if(':' in t_strings[x]):
+for ch in s:
+    if ch not in letters:
         valid_input = 'NO'
+t_strings = []
+if k < 1:
+    valid_input = 'NO'
+else:
+    for x in range(0, k):
+        t_strings.append(sys.stdin.readline().strip())
+        if(':' in t_strings[x]):
+            valid_input = 'NO'
+        for cha in t_strings[x]:
+            if cha not in letters and cha not in capitalLetters:
+                valid_input = 'NO'
 myline = sys.stdin.readline().strip()
 dict_of_R = {}
 unused_Rs = []
 while(myline):
-    if myline[0] in capitalLetters:
-        if myline[1] == ':':
-            tmp_line = myline.split(":")
-            unused_Rs.append(tmp_line[0])
-            tmp_list_items = tmp_line[1].split(",")
-            tmp_list = []
-            for x in tmp_list_items:
-                tmp_list.append(x)
-            dict_of_R[tmp_line[0]] = tmp_list
-            myline = sys.stdin.readline().strip()                
-        else: 
+    try:
+        if myline[0] in capitalLetters:
+            if myline[1] == ':':
+                tmp_line = myline.split(":")
+                unused_Rs.append(tmp_line[0])
+                tmp_list_items = tmp_line[1].split(",")
+                tmp_list = []
+                for x in tmp_list_items:
+                    tmp_list.append(x)
+                dict_of_R[tmp_line[0]] = tmp_list
+                myline = sys.stdin.readline().strip()                
+            else: 
+                valid_input = 'NO'
+                myline = sys.stdin.readline().strip()
+        else:
             valid_input = 'NO'
             myline = sys.stdin.readline().strip()
-    else:
+    except IndexError:
         valid_input = 'NO'
-        myline = sys.stdin.readline().strip()
+        print("indexError")
+        break
+
 
 unused_Rs_copy = copy.deepcopy(unused_Rs)
 
@@ -49,15 +64,53 @@ if(len(valid_input) > 0):
     print(valid_input)
     sys.exit()
 
-#TODO laga þannig að ef input ekki rétt þá skila NO
-
 res = set([s[i: j] for i in range(len(s))
        for j in range(i + 1, len(s) + 1)])
+
+t_strings_copy = list(dict.fromkeys(t_strings))
+t_strings_new = copy.deepcopy(t_strings_copy)
+
+t_strings_copy.sort(key=len, reverse=False)
+for n in t_strings_copy:
+    for m in range(0, len(t_strings_copy)):
+        if n in t_strings_copy[m]:
+            if n != t_strings_copy[m]:
+                if n in t_strings_new:
+                    t_strings_new.remove(n)
 
 #######################################################
 #      Algorithm that is used to find if soultion
 #    exists and returns it if it does otherwise NO
 #######################################################
+import math
+
+class LazyCartesianProduct:
+    def __init__(self, sets):
+        self.sets = sets
+        self.divs = []
+        self.mods = []
+        self.maxSize = 1
+        self.precompute()
+    
+    def precompute(self):
+        for i in self.sets:
+            self.maxSize = self.maxSize * len(i)
+        length = len(self.sets)
+        factor = 1
+        for i in range((length - 1), -1, -1):
+            items = len(self.sets[i])
+            self.divs.insert(0, factor)
+            self.mods.insert(0, items)
+            factor = factor * items
+    
+    def entryAt(self, n):
+        length = len(self.sets)
+        if n < 0 or n >= self.maxSize:
+            raise IndexError
+        combination = []
+        for i in range(0, length):
+            combination.append(self.sets[i][ int(math.floor(n / self.divs[i])) % self.mods[i]])
+        return combination
 
 # Lets start by cutting out all r elements in each R by checking if they alone are a substring of s
 # thus eliminating all r's that could never form a substring of s
@@ -66,7 +119,7 @@ dict_of_R_copy = {}
 for element in dict_of_R.keys():
     dict_of_R_copy[element]=dict_of_R[element][0]
 used_R =[]
-for x in t_strings:
+for x in t_strings_new:
     tmp_len = len(x)
     for i in range(0, tmp_len):
         if(x[i].isupper()):
@@ -78,15 +131,19 @@ for x in t_strings:
             tmp_dict_list_len = len(tmp_dict_list)
             tmp_index_list = []
             for j in range(0, tmp_dict_list_len):
-                if tmp_dict_list[j] not in s:
+                if tmp_dict_list[j] not in res:
                     tmp_index_list.append(j)
             tmp_index_list.sort(reverse=True)
             for m in tmp_index_list:
-                tmp_dict_list.pop(m)
+                if len(tmp_dict_list) > 1:
+                    print(m)
+                    tmp_dict_list.pop(m)
             dict_of_R[x[i]] = tmp_dict_list
 
 for x in unused_Rs:
     del dict_of_R[x]
+
+print(dict_of_R)
 
 
 # function that takes in t_string and a choice of r's and performs expansion on string
@@ -130,10 +187,14 @@ def check_substring(t_strings, big_Rs, choices, s, all_dicts):
 # Make a list with all possible choices of r's from used R's and check if there is a solution
 dictionary_items = dict_of_R.items()
 all_lists = []
-
 for item in dictionary_items:
+    if "" in item[1]:
+        item[1].remove("")
     all_lists.append(numpy.array(item[1]))
 
+
+
+"""
 def listoflists(all_lists1, t_string, used_R, s):
     count_t_strings = len(t_string)
     for x in itertools.product(*all_lists1):
@@ -170,15 +231,43 @@ def cartesian_product_simple_transpose(arrays):
     for i, a in enumerate(numpy.ix_(*arrays)):
         arr[i, ...] = a
     return arr.reshape(la, -1).T
+"""
 
-t_strings.sort(key=len, reverse=True)
+def check_solution(cp, t_string):
+    count_t_strings = len(t_string)
+    for x in range(0, cp.maxSize):
+        counter = 0
+        for y in t_string:
+            current_t_string = expansion(y, used_R, cp.entryAt(x))
+            if current_t_string not in res:
+                break
+            else:
+                counter += 1
+        print("counter: {}, count_t_strings: {}".format(counter, count_t_strings))
+        if counter == count_t_strings:
+            for d in unused_Rs_copy:
+                if d in used_R:
+                    indx = used_R.index(d)
+                    print("{}: {}".format(d, cp.entryAt(x)[indx]))
+                else:
+                    print("{}: {}".format(d, dict_of_R_copy[d]))
+            return
+    print('NO')
+
+t_strings_new.sort(key=len, reverse=True)
 used_R.sort()
 
 #all_choices = listoflists1(all_lists, t_strings, used_R, s)
-all_lists_new = cartesian_product_simple_transpose(all_lists)
-for i in range(0,10):
-    print(all_lists_new[i])
+#all_lists_new = cartesian_product_simple_transpose(all_lists)
+#for i in range(0,10):
+#    print(all_lists_new[i])
 #listoflists(all_lists, t_strings, used_R, s)
+
+cp = LazyCartesianProduct(all_lists)
+
+print(all_lists)
+
+check_solution(cp, t_strings_new)
 
 
 #check_substring(t_strings, used_R, all_choices, s, dict_of_R_copy)

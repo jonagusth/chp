@@ -1,12 +1,13 @@
 import itertools 
 import copy
 import numpy
+import operator
 #######################################################
 #         Decoder that takes from SWE file and 
 #       populates list and variables accordingly 
 #######################################################
 
-f = open("tests/test07.swe", "r")
+f = open("tests/test02.swe", "r")
 k = int(f.readline())
 s = f.readline().strip()
 t_strings = []
@@ -42,14 +43,41 @@ for n in t_strings_copy:
                 if n in t_strings_new:
                     t_strings_new.remove(n)
 
-print("t_strings: {}".format(t_strings_new))
-
-
 
 #######################################################
 #      Algorithm that is used to find if soultion
 #    exists and returns it if it does otherwise NO
 #######################################################
+
+import math
+
+class LazyCartesianProduct:
+    def __init__(self, sets):
+        self.sets = sets
+        self.divs = []
+        self.mods = []
+        self.maxSize = 1
+        self.precompute()
+    
+    def precompute(self):
+        for i in self.sets:
+            self.maxSize = self.maxSize * len(i)
+        length = len(self.sets)
+        factor = 1
+        for i in range((length - 1), -1, -1):
+            items = len(self.sets[i])
+            self.divs.insert(0, factor)
+            self.mods.insert(0, items)
+            factor = factor * items
+    
+    def entryAt(self, n):
+        length = len(self.sets)
+        if n < 0 or n >= self.maxSize:
+            raise IndexError
+        combination = []
+        for i in range(0, length):
+            combination.append(self.sets[i][ int(math.floor(n / self.divs[i])) % self.mods[i]])
+        return combination
 
 # Lets start by cutting out all r elements in each R by checking if they alone are a substring of s
 # thus eliminating all r's that could never form a substring of s
@@ -74,11 +102,14 @@ for x in t_strings_new:
                     tmp_index_list.append(j)
             tmp_index_list.sort(reverse=True)
             for m in tmp_index_list:
-                tmp_dict_list.pop(m)
+                if len(tmp_dict_list) > 1:
+                    tmp_dict_list.pop(m)
             dict_of_R[x[i]] = tmp_dict_list
 
 for x in unused_Rs:
     del dict_of_R[x]
+
+print(dict_of_R)
 
 def expansion(curr_string, big_Rs, choice):
     new_string = ""
@@ -115,8 +146,11 @@ def check_substring(t_strings_new, big_Rs, choices, s, all_dicts):
 dictionary_items = dict_of_R.items()
 all_lists = []
 for item in dictionary_items:
+    if "" in item[1]:
+        item[1].remove("")
     all_lists.append(numpy.array(item[1]))
 
+"""
 def listoflists(all_lists1, t_string, used_R, s):
     tmp_all_choices = []
     count_t_strings = len(t_string)
@@ -159,15 +193,50 @@ def cartesian_product(arrays):
     for i, a in enumerate(numpy.ix_(*arrays)):
         arr[...,i] = a
     return arr.reshape(-1, la)
+"""
+
+def check_solution(cp, t_string):
+    outer_counter = 0
+    count_t_strings = len(t_string)
+    dummy_count= 0
+    for x in range(0, cp.maxSize):
+        counter = 0
+        for y in t_string:
+            current_t_string = expansion(y, used_R, cp.entryAt(x))
+            dummy_count+=1
+            if current_t_string not in res:
+                break
+            else:
+                counter += 1
+        print("counter: {}, count_t_strings: {}".format(counter, count_t_strings))
+        if counter == count_t_strings:
+            for d in unused_Rs_copy:
+                if d in used_R:
+                    indx = used_R.index(d)
+                    print("{}: {}".format(d, cp.entryAt(x)[indx]))
+                else:
+                    print("{}: {}".format(d, dict_of_R_copy[d]))
+            print(dummy_count)
+            return
+        print(outer_counter, end='\r')
+        outer_counter+=1
+    print('NO')
 
 t_strings_new.sort(key=len, reverse=True)
 used_R.sort()
 
-all_lists_new = cartesian_product(all_lists)
+#all_lists_new = cartesian_product(all_lists)
 
 #all_choices = listoflists1(all_lists, t_strings_new, used_R, s)
 #listoflists(all_lists, t_strings_new, used_R, s)
 
-print("length of all choices: {}".format(len(all_lists_new)))
+#print("length of all choices: {}".format(len(all_lists_new)))
 
-check_substring(t_strings_new, used_R, all_lists_new, s, dict_of_R_copy)
+cp = LazyCartesianProduct(all_lists)
+
+print(all_lists)
+
+check_solution(cp, t_strings_new)
+
+print(cp.maxSize)
+#check_substring(t_strings_new, used_R, all_lists_new, s, dict_of_R_copy)
