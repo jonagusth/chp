@@ -7,7 +7,7 @@ import operator
 #       populates list and variables accordingly 
 #######################################################
 
-f = open("tests/test02.swe", "r")
+f = open("tests/test01.swe", "r")
 k = int(f.readline())
 s = f.readline().strip()
 t_strings = []
@@ -185,14 +185,6 @@ def listoflists1(all_lists1, t_string, used_R, s):
             all_choices.append(x)
     #return list(itertools.product(*all_lists1))
     return all_choices
-
-def cartesian_product(arrays):
-    la = len(arrays)
-    dtype = numpy.result_type(*arrays)
-    arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
-    for i, a in enumerate(numpy.ix_(*arrays)):
-        arr[...,i] = a
-    return arr.reshape(-1, la)
 """
 
 def check_solution(cp, t_string):
@@ -208,7 +200,6 @@ def check_solution(cp, t_string):
                 break
             else:
                 counter += 1
-        print("counter: {}, count_t_strings: {}".format(counter, count_t_strings))
         if counter == count_t_strings:
             for d in unused_Rs_copy:
                 if d in used_R:
@@ -225,18 +216,13 @@ def check_solution(cp, t_string):
 t_strings_new.sort(key=len, reverse=True)
 used_R.sort()
 
-#all_lists_new = cartesian_product(all_lists)
-
 #all_choices = listoflists1(all_lists, t_strings_new, used_R, s)
 #listoflists(all_lists, t_strings_new, used_R, s)
 
-#print("length of all choices: {}".format(len(all_lists_new)))
-
 cp = LazyCartesianProduct(all_lists)
-
+print(cp.maxSize)
 print(all_lists)
 
 check_solution(cp, t_strings_new)
 
-print(cp.maxSize)
 #check_substring(t_strings_new, used_R, all_lists_new, s, dict_of_R_copy)
