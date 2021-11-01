@@ -42,6 +42,11 @@ for x in range(0, k):
             if cha.isupper():
                 if cha not in used_R:
                     used_R.append(cha)
+
+if len(used_R) < 1:
+    if s != "":
+        print('NO')
+        sys.exit()
 myline = sys.stdin.readline().strip()
 dict_of_R = {}
 unused_Rs = []
@@ -59,6 +64,11 @@ try:
                 for x in tmp_list_items:
                     if x in s:
                         tmp_list.append(x)
+                if len(tmp_list) < 0:
+                    if tmp_line[0] in used_R:
+                        print('NO')
+                        sys.exit()
+                    tmp_list.append(tmp_list_items[0])
                 dict_of_R[tmp_line[0]] = tmp_list
                 myline = sys.stdin.readline().strip()                
             else: 
